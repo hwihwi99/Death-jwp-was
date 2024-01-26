@@ -7,11 +7,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Map;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import controller.Controller;
+import util.HttpRequestUtils;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -30,6 +33,10 @@ public class RequestHandler extends Thread {
             HttpRequest request = new HttpRequest(in);
             HttpResponse response = new HttpResponse(out);
 
+            if(request.getCookies().getCookie("JSESSIONID") == null) { // 헤더에 Cookie에 아무것도 없으면 할당해준다.
+                response.addHeader("Set-Cookie", "c="+ UUID.randomUUID());
+            }
+
             Controller controller = RequestMapping.getController(request.getPath());
             if (controller == null) {
                 String path = getDefaultPath(request.getPath());
@@ -40,6 +47,14 @@ public class RequestHandler extends Thread {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    /**
+     * 세션아이디가 존재하는지 여부를 판단함(세션아이디는 JSESSIONID에 전달된다)
+     * */
+    private String getSessionId(String cookieValue) {
+        Map<String, String> cookies = HttpRequestUtils.parseCookies(cookieValue);
+        return cookies.get("JSESSIONID");
     }
 
     private String getDefaultPath(String path) {

@@ -6,6 +6,7 @@ import http.HttpResponse;
 import java.util.Collection;
 import java.util.Map;
 
+import http.HttpSession;
 import model.User;
 import util.HttpRequestUtils;
 import db.DataBase;
